@@ -16,7 +16,6 @@ app.route('/').get(function (req, res) {
   res.send("<h2>CacheBox for FlagBrew</h2><p>Version 0.0.1</p>")
 })
 
-
 app.route("/api/repos").get(function (req, res) {
   res.setHeader('Content-Type', 'application/json');
   database.get_all("repos", function (data) {
@@ -31,6 +30,19 @@ app.route("/api/repos/:name").get(function (req, res) {
   })
 });
 
+app.route("/api/members").get(function (req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  database.get_all("members", function (data) {
+    res.send(data);
+  })
+});
+
+app.route("/api/members/:name").get(function (req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  database.get_one("members", req.params.name, function (data) {
+    res.send(data);
+  })
+});
 
 var j = schedule.scheduleJob('*/30 * * * *', function () {
   fetch.repos(function (repo) {
@@ -41,5 +53,10 @@ var j = schedule.scheduleJob('*/30 * * * *', function () {
         database.insert("repos", { releases: releases, readme: readme }, repo)
       })
     });
+  });
+  fetch.members(function (member) {
+    fetch.member(member, function (data) {
+      database.insert("members", { data: data }, member)
+    })
   });
 });
